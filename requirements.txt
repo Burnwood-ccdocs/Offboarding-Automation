@@ -1,0 +1,12 @@
+slack-bolt
+python-dotenv
+pyjwt
+requests
+slack-error-notifier
+twilio
+selenium
+webdriver-manager
+pyotp
+uszipcode
+openai
+pytz 
