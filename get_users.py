@@ -8,6 +8,8 @@ import logging
 import sys
 from datetime import datetime
 from dotenv import load_dotenv
+import threading
+import time
 import argparse
 from slack_bolt import App
 from slack_bolt.adapter.socket_mode import SocketModeHandler
@@ -16,6 +18,9 @@ from slack_error_notifier import slack_error_handler
 
 # Import the OAuth client and TwilioPhoneManager from main.py
 from main import GoHighLevelOAuth, perform_oauth_flow, TwilioPhoneManager
+
+# Import token refresh helper
+from get_token import refresh_tokens
 
 # Configure logging
 logging.basicConfig(
@@ -29,6 +34,36 @@ logger = logging.getLogger(__name__)
 
 # Load environment variables
 load_dotenv()
+
+# ---------------------------------------------------------------------------
+# Background token refresher
+# ---------------------------------------------------------------------------
+
+def _start_token_refresh_daemon(interval_hours: int = 12):
+    """Start a daemon thread that refreshes OAuth tokens every `interval_hours`."""
+
+    interval_seconds = interval_hours * 3600
+
+    def _loop():
+        while True:
+            try:
+                logger.info("[TokenRefresher] Running scheduled token refresh…")
+                refresh_tokens()
+            except Exception as exc:
+                logger.error("[TokenRefresher] Token refresh failed: %s", exc)
+            time.sleep(interval_seconds)
+
+    # Run one refresh immediately at startup
+    try:
+        refresh_tokens()
+    except Exception as exc:
+        logger.error("[TokenRefresher] Initial token refresh failed: %s", exc)
+
+    thread = threading.Thread(target=_loop, daemon=True, name="TokenRefresher")
+    thread.start()
+
+# Start the refresher as soon as the module is imported
+_start_token_refresh_daemon()
 
 # Go High Level OAuth Configuration
 GHL_CLIENT_ID = os.getenv("GHL_CLIENT_ID")
