@@ -1,5 +1,4 @@
 import os
-from uszipcode import SearchEngine
 import openai
 import logging
 import json
@@ -88,15 +87,8 @@ def get_area_codes_for_zip(zip_code):
         _area_code_cache[zip_code] = openai_codes
         return openai_codes
     
-    # Fall back to uszipcode library
-    logger.info(f"Falling back to uszipcode library for ZIP {zip_code}")
-    search = SearchEngine(simple_zipcode=False)
-    zipcode = search.by_zipcode(zip_code)
-    
-    if zipcode and zipcode.area_code_list:
-        _area_code_cache[zip_code] = zipcode.area_code_list
-        return zipcode.area_code_list
-    
+    # No offline fallback since uszipcode is no longer used; returning empty list.
+    logger.info("OpenAI did not return area code; offline lookup disabled.")
     _area_code_cache[zip_code] = []
     return []
 

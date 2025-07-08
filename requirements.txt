@@ -7,6 +7,5 @@ twilio
 selenium
 webdriver-manager
 pyotp
-uszipcode
 openai
 pytz 

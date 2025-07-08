@@ -1,1 +1,0 @@
-0 */12 * * * python /app/get_token.py >> /var/log/cron.log 2>&1 
